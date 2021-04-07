@@ -25,7 +25,7 @@ function Chat(props) {
   const [messages, addMessage] = useState([]);
   const [liveIds, addLiveId] = useState([]);
   const [message, setMessage] = useState('');
-  const [historyCount, incrementHistoryCount] = useState(0);
+  const [historyCount, incrementHistoryCount] = useState(3);
 
   const handleMessage = event => {
     const message = event.message;
@@ -38,6 +38,19 @@ function Chat(props) {
 
   function clearMessages() {
       addMessage([]);
+  }
+
+  function deleteMessages(){
+    pubnub.deleteMessages(
+      {
+          channel: 'awesome-channel',
+          start: "16176138893975680",
+          end: "16176461584677548",
+      },
+      (result) => {
+          console.log(result);
+      }
+  );
   }
 
   
@@ -57,7 +70,7 @@ function hereNow(channels) {
     }
     ); 
   }
-  
+
   const refreshLiveUsers = function () {
     addLiveId([]);
     hereNow(channels);
@@ -74,20 +87,26 @@ function hereNow(channels) {
     }
   };
 
+  const getHistoryOnClick=count=>{
+    clearMessages();
+    pubnub.history({
+      channel: 'awesome-channel',
+      count: count,
+    },
+    (status, response) => {
+      console.log(response);
+      response.messages.map(message=>{
+        const text = '('+message.entry.userid+'): '+message.entry.text|| message;
+            addMessage(messages => [...messages, text]);
+      })
+    }
+  );
+  }
+
 
 function getHistory() {  
   clearMessages();
-  pubnub.history({
-    channel: 'awesome-channel',
-    count: 40,
-  },
-  (status, response) => {
-    response.messages.map(message=>{
-      const text = '('+message.entry.userid+'): '+message.entry.text|| message;
-          addMessage(messages => [...messages, text]);
-    })
-  }
-);
+  getHistoryOnClick(3);
 }
 
   const sendMessage = message => {
@@ -120,7 +139,9 @@ function getHistory() {
             style={historyStyles}
             onClick={e => {
               e.preventDefault();
-              getHistory();
+              incrementHistoryCount(count=>count+3);
+              console.log('IT is 0')
+              getHistoryOnClick(historyCount);
             }}
           >History</button>
         <div style={listStyles}>
@@ -176,7 +197,7 @@ function getHistory() {
             style={clearStyles}
             onClick={e => {
               e.preventDefault();
-              clearMessages();
+              deleteMessages();
             }}
           >Clear</button>
         </div>
