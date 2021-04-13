@@ -3,15 +3,18 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Redirect, Switch } from "react-router-dom";
+import Login from './LoginPage';
 
 ReactDOM.render(
   <React.StrictMode>
     <Router>
       <Switch>
-        <Route path="/chats/:id">
-          <App />
-        </Route>
+      <Route exact path="/">
+        <Redirect to="/login" />
+      </Route>
+      <Route exact path="/login" component={Login}/>
+      <Route exact path="/chats/:id" component={App}/>
       </Switch>
     </Router>
   </React.StrictMode>,
